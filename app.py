@@ -4,7 +4,7 @@ import datetime
 
 # ページ設定
 st.set_page_config(page_title="収支管理ツール", layout="centered")
-st.title("🎰 収支管理ツール")
+st.title("収支管理")
 
 DATA_FILE = 'shushi_data.csv'
 
@@ -80,7 +80,7 @@ if not df.empty:
     tab1, tab2 = st.tabs(["📊 通算成績", "🗑️ 履歴・削除"])
 
     with tab1:
-        st.subheader("機種ごとの通算成績")
+        st.subheader("機種ごとの収支")
         # グループ化して合計を表示
         stats = df.groupby('機種名')[numeric_cols].sum()
         st.dataframe(stats, use_container_width=True)
