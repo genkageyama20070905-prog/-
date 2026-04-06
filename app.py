@@ -4,7 +4,7 @@ import datetime
 
 # ページ設定
 st.set_page_config(page_title="収支管理ツール", layout="centered")
-st.title("🎰 収支管理ツール")
+st.title("収支管理ツール")
 
 # データの保存先ファイル
 DATA_FILE = 'shushi_data.csv'
@@ -80,7 +80,7 @@ if not df.empty:
     tab1, tab2 = st.tabs(["📊 機種別通算", "📜 履歴一覧"])
 
     with tab1:
-        st.subheader("機種ごとの通算成績")
+        st.subheader("機種ごとの収支")
         stats = df.groupby('機種名').agg({
             '稼働時間': 'sum',
             '投資枚数': 'sum',
