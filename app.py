@@ -9,9 +9,12 @@ st.title("🎰 収支管理ツール")
 # データの保存先ファイル
 DATA_FILE = 'shushi_data.csv'
 
-# データの読み込み
+# --- データの読み込みと整合性チェック ---
 try:
     df = pd.read_csv(DATA_FILE)
+    # 古いデータに「台数」がない場合、自動的に「1」で埋める
+    if '台数' not in df.columns:
+        df.insert(3, '台数', 1)
     df['日付'] = df['日付'].astype(str)
 except (FileNotFoundError, pd.errors.EmptyDataError):
     df = pd.DataFrame(columns=['日付', '機種名', '稼働時間', '台数', '投資枚数', '回収枚数', '収支'])
@@ -28,7 +31,6 @@ with st.form("input_form", clear_on_submit=True):
     new_model_name = st.text_input("新しい機種名を入力（新規の場合のみ）", placeholder="機種名を入力してください")
     model_name = new_model_name if selected_option == "(新規入力)" else selected_option
     
-    # 項目追加：稼働時間と投資枚数の間に「台数」を配置
     duration = st.number_input("1. 稼働時間 (h)", min_value=0.0, step=0.5, value=None, placeholder="例: 3.5")
     unit_count = st.number_input("2. 台数", min_value=1, step=1, value=None, placeholder="例: 1")
     investment = st.number_input("3. 投資枚数 (枚)", min_value=0, step=10, value=None, placeholder="例: 500")
@@ -55,29 +57,24 @@ with st.form("input_form", clear_on_submit=True):
             
             df = pd.concat([df, new_row], ignore_index=True)
             df.to_csv(DATA_FILE, index=False)
-            st.success(f"【{model_name}】のデータを保存しました！")
+            st.success(f"【{model_name}】を保存しました！")
             st.rerun()
 
 # --- 集計・表示エリア ---
 st.divider()
 
 if not df.empty:
-    # 数値列の変換（台数も含める）
-    for col in ['稼働時間', '台数', '投資枚数', '回収枚数', '収支']:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
+    # 数値列の強制変換（エラー回避）
+    cols_to_fix = ['稼働時間', '台数', '投資枚数', '回収枚数', '収支']
+    for col in cols_to_fix:
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
     tab1, tab2 = st.tabs(["📊 機種別通算", "📜 履歴一覧"])
 
     with tab1:
         st.subheader("機種ごとの通算成績")
-        # 台数も合計（sum）で集計
-        stats = df.groupby('機種名').agg({
-            '台数': 'sum',
-            '稼働時間': 'sum',
-            '投資枚数': 'sum',
-            '回収枚数': 'sum',
-            '収支': 'sum'
-        })
+        # 機種名でグループ化して合計
+        stats = df.groupby('機種名')[cols_to_fix].sum()
         st.dataframe(stats, use_container_width=True)
 
     with tab2:
