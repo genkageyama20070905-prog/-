@@ -77,7 +77,7 @@ if not df.empty:
     for col in numeric_cols:
         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
-    tab1, tab2 = st.tabs(["📊 通算成績", "🗑️ 履歴・削除"])
+    tab1, tab2 = st.tabs(["📊 通算収支 ", "🗑️ 履歴・削除"])
 
     with tab1:
         st.subheader("機種ごとの収支")
